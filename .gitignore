@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore large pretrained model files
+VAN/models/STAR/pretrained
+
+# Ignore installed STAR engine
+VAN/models/STAR/star
