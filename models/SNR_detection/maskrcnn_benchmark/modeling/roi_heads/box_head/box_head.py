@@ -61,15 +61,13 @@ class ROIBoxHead(torch.nn.Module):
 
         da_ins_feas = self.feature_extractor(features, da_proposals)
         class_logits, box_regression = self.predictor(da_ins_feas)
-        _, _, da_ins_labels = self.loss_evaluator(
-            [class_logits], [box_regression]
-        )
+        _, _, da_ins_labels = self.loss_evaluator([class_logits], [box_regression])
         return (
             x,
             proposals,
             dict(loss_classifier=loss_classifier, loss_box_reg=loss_box_reg),
             da_ins_feas,
-            da_ins_labels
+            da_ins_labels,
         )
 
 

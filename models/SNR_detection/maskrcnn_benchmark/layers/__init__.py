@@ -15,9 +15,18 @@ from .sigmoid_focal_loss import SigmoidFocalLoss
 from .gradient_scalar_layer import GradientScalarLayer
 from .consistency_loss import consistency_loss
 
-__all__ = ["nms", "roi_align", "ROIAlign", "roi_pool", "ROIPool",
-           "smooth_l1_loss", "Conv2d", "ConvTranspose2d", "interpolate",
-           "FrozenBatchNorm2d", "SigmoidFocalLoss", "GradientScalarLayer",
-           "consistency_loss"
-          ]
-
+__all__ = [
+    "nms",
+    "roi_align",
+    "ROIAlign",
+    "roi_pool",
+    "ROIPool",
+    "smooth_l1_loss",
+    "Conv2d",
+    "ConvTranspose2d",
+    "interpolate",
+    "FrozenBatchNorm2d",
+    "SigmoidFocalLoss",
+    "GradientScalarLayer",
+    "consistency_loss",
+]

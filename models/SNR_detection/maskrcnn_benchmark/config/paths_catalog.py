@@ -9,27 +9,27 @@ class DatasetCatalog(object):
     DATASETS = {
         "coco_2017_train": {
             "img_dir": "coco/train2017",
-            "ann_file": "coco/annotations/instances_train2017.json"
+            "ann_file": "coco/annotations/instances_train2017.json",
         },
         "coco_2017_val": {
             "img_dir": "coco/val2017",
-            "ann_file": "coco/annotations/instances_val2017.json"
+            "ann_file": "coco/annotations/instances_val2017.json",
         },
         "coco_2014_train": {
             "img_dir": "coco/train2014",
-            "ann_file": "coco/annotations/instances_train2014.json"
+            "ann_file": "coco/annotations/instances_train2014.json",
         },
         "coco_2014_val": {
             "img_dir": "coco/val2014",
-            "ann_file": "coco/annotations/instances_val2014.json"
+            "ann_file": "coco/annotations/instances_val2014.json",
         },
         "coco_2014_minival": {
             "img_dir": "coco/val2014",
-            "ann_file": "coco/annotations/instances_minival2014.json"
+            "ann_file": "coco/annotations/instances_minival2014.json",
         },
         "coco_2014_valminusminival": {
             "img_dir": "coco/val2014",
-            "ann_file": "coco/annotations/instances_valminusminival2014.json"
+            "ann_file": "coco/annotations/instances_valminusminival2014.json",
         },
         "keypoints_coco_2014_train": {
             "img_dir": "coco/train2014",
@@ -37,7 +37,7 @@ class DatasetCatalog(object):
         },
         "keypoints_coco_2014_val": {
             "img_dir": "coco/val2014",
-            "ann_file": "coco/annotations/person_keypoints_val2014.json"
+            "ann_file": "coco/annotations/person_keypoints_val2014.json",
         },
         "keypoints_coco_2014_minival": {
             "img_dir": "coco/val2014",
@@ -47,45 +47,30 @@ class DatasetCatalog(object):
             "img_dir": "coco/val2014",
             "ann_file": "coco/annotations/person_keypoints_valminusminival2014.json",
         },
-        "voc_2007_train": {
-            "data_dir": "voc/VOC2007",
-            "split": "train"
-        },
+        "voc_2007_train": {"data_dir": "voc/VOC2007", "split": "train"},
         "voc_2007_train_cocostyle": {
             "img_dir": "voc/VOC2007/JPEGImages",
-            "ann_file": "voc/VOC2007/Annotations/pascal_train2007.json"
+            "ann_file": "voc/VOC2007/Annotations/pascal_train2007.json",
         },
-        "voc_2007_val": {
-            "data_dir": "voc/VOC2007",
-            "split": "val"
-        },
+        "voc_2007_val": {"data_dir": "voc/VOC2007", "split": "val"},
         "voc_2007_val_cocostyle": {
             "img_dir": "voc/VOC2007/JPEGImages",
-            "ann_file": "voc/VOC2007/Annotations/pascal_val2007.json"
+            "ann_file": "voc/VOC2007/Annotations/pascal_val2007.json",
         },
-        "voc_2007_test": {
-            "data_dir": "voc/VOC2007",
-            "split": "test"
-        },
+        "voc_2007_test": {"data_dir": "voc/VOC2007", "split": "test"},
         "voc_2007_test_cocostyle": {
             "img_dir": "voc/VOC2007/JPEGImages",
-            "ann_file": "voc/VOC2007/Annotations/pascal_test2007.json"
+            "ann_file": "voc/VOC2007/Annotations/pascal_test2007.json",
         },
-        "voc_2012_train": {
-            "data_dir": "voc/VOC2012",
-            "split": "train"
-        },
+        "voc_2012_train": {"data_dir": "voc/VOC2012", "split": "train"},
         "voc_2012_train_cocostyle": {
             "img_dir": "voc/VOC2012/JPEGImages",
-            "ann_file": "voc/VOC2012/Annotations/pascal_train2012.json"
+            "ann_file": "voc/VOC2012/Annotations/pascal_train2012.json",
         },
-        "voc_2012_val": {
-            "data_dir": "voc/VOC2012",
-            "split": "val"
-        },
+        "voc_2012_val": {"data_dir": "voc/VOC2012", "split": "val"},
         "voc_2012_val_cocostyle": {
             "img_dir": "voc/VOC2012/JPEGImages",
-            "ann_file": "voc/VOC2012/Annotations/pascal_val2012.json"
+            "ann_file": "voc/VOC2012/Annotations/pascal_val2012.json",
         },
         "voc_2012_test": {
             "data_dir": "voc/VOC2012",
@@ -94,67 +79,67 @@ class DatasetCatalog(object):
         },
         "cityscapes_fine_instanceonly_seg_train_cocostyle": {
             "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/train/image",
-            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_train.json"
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_train.json",
         },
         "cityscapes_fine_instanceonly_seg_val_cocostyle": {
             "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/val/image",
-            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_val.json"
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_val.json",
         },
         "cityscapes_fine_instanceonly_seg_test_cocostyle": {
             "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/test/image",
-            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_test.json"
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_cocostyle/instancesonly_filtered_gtFine_test.json",
         },
         "foggy_cityscapes_fine_instanceonly_seg_train_cocostyle": {
             "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/images",
-            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/foggy_cityscapes_cocostyle/foggy_instancesonly_filtered_gtFine_train.json"
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/foggy_cityscapes_cocostyle/foggy_instancesonly_filtered_gtFine_train.json",
         },
         "foggy_cityscapes_fine_instanceonly_seg_val_cocostyle": {
             "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/images",
-            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/foggy_cityscapes_cocostyle/foggy_instancesonly_filtered_gtFine_val.json"
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape_foggy/foggy_cityscapes_cocostyle/foggy_instancesonly_filtered_gtFine_val.json",
         },
-        'sim10k_cocostyle': {
-                "img_dir": 'sim10k/JPEGImages',
-                "ann_file": 'sim10k/car_instances.json'
+        "sim10k_cocostyle": {
+            "img_dir": "sim10k/JPEGImages",
+            "ann_file": "sim10k/car_instances.json",
         },
-        'kitti_cocostyle': {
-                "img_dir": '/data/home/v-xiji/Domain-Adaptive-Faster-RCNN-PyTorch/Dataset/kitti/training/image_2',
-                "ann_file": '/data/home/v-xiji/Domain-Adaptive-Faster-RCNN-PyTorch/Dataset/kitti/kitti_cocostyle/caronly_training.json'
+        "kitti_cocostyle": {
+            "img_dir": "/data/home/v-xiji/Domain-Adaptive-Faster-RCNN-PyTorch/Dataset/kitti/training/image_2",
+            "ann_file": "/data/home/v-xiji/Domain-Adaptive-Faster-RCNN-PyTorch/Dataset/kitti/kitti_cocostyle/caronly_training.json",
         },
-        'cityscapes_car_train_cocostyle': {
-                "img_dir": '/data/home/v-xiji/HPC_xiji/Dataset/CityScape/train/image',
-                "ann_file": '/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_car_train_cocostyle/caronly_filtered_gtFine_train.json',
+        "cityscapes_car_train_cocostyle": {
+            "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/train/image",
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_car_train_cocostyle/caronly_filtered_gtFine_train.json",
         },
-        'cityscapes_car_val_cocostyle': {
-                "img_dir": '/data/home/v-xiji/HPC_xiji/Dataset/CityScape/val/image',
-                "ann_file": '/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_car_train_cocostyle/caronly_filtered_gtFine_val.json',
+        "cityscapes_car_val_cocostyle": {
+            "img_dir": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/val/image",
+            "ann_file": "/data/home/v-xiji/HPC_xiji/Dataset/CityScape/cityscapes_car_train_cocostyle/caronly_filtered_gtFine_val.json",
         },
         "voc_2007_train_watercolor_cocostyle": {
             "img_dir": "voc/VOC2007/JPEGImages",
-            "ann_file": "voc/annotations/pascal_train2007.json"
+            "ann_file": "voc/annotations/pascal_train2007.json",
         },
         "voc_2007_val_watercolor_cocostyle": {
             "img_dir": "voc/VOC2007/JPEGImages",
-            "ann_file": "voc/annotations/pascal_val2007.json"
+            "ann_file": "voc/annotations/pascal_val2007.json",
         },
         "voc_2012_train_watercolor_cocostyle": {
             "img_dir": "voc/VOC2012/JPEGImages",
-            "ann_file": "voc/annotations/pascal_train2012.json"
+            "ann_file": "voc/annotations/pascal_train2012.json",
         },
         "voc_2012_val_watercolor_cocostyle": {
             "img_dir": "voc/VOC2012/JPEGImages",
-            "ann_file": "voc/annotations/Annotations/pascal_val2012.json"
+            "ann_file": "voc/annotations/Annotations/pascal_val2012.json",
         },
-        'clipart_cocostyle': {
-                "img_dir": 'clipart/JPEGImages',
-                "ann_file": 'clipart/instances.json',
+        "clipart_cocostyle": {
+            "img_dir": "clipart/JPEGImages",
+            "ann_file": "clipart/instances.json",
         },
-        'watercolor_train_cocostyle': {
-                "img_dir": 'watercolor/JPEGImages',
-                "ann_file": 'watercolor/instances_train.json',
+        "watercolor_train_cocostyle": {
+            "img_dir": "watercolor/JPEGImages",
+            "ann_file": "watercolor/instances_train.json",
         },
-        'watercolor_val_cocostyle': {
-                "img_dir": 'watercolor/JPEGImages',
-                "ann_file": 'watercolor/instances_test.json',
+        "watercolor_val_cocostyle": {
+            "img_dir": "watercolor/JPEGImages",
+            "ann_file": "watercolor/instances_test.json",
         },
     }
 
@@ -207,7 +192,7 @@ class ModelCatalog(object):
         "36761843/e2e_mask_rcnn_X-101-32x8d-FPN_1x": "06_35_59.RZotkLKI",
         "37129812/e2e_mask_rcnn_X-152-32x8d-FPN-IN5k_1.44x": "09_35_36.8pzTQKYK",
         # keypoints
-        "37697547/e2e_keypoint_rcnn_R-50-FPN_1x": "08_42_54.kdzV35ao"
+        "37697547/e2e_keypoint_rcnn_R-50-FPN_1x": "08_42_54.kdzV35ao",
     }
 
     @staticmethod
@@ -221,7 +206,7 @@ class ModelCatalog(object):
     @staticmethod
     def get_c2_imagenet_pretrained(name):
         prefix = ModelCatalog.S3_C2_DETECTRON_URL
-        name = name[len("ImageNetPretrained/"):]
+        name = name[len("ImageNetPretrained/") :]
         name = ModelCatalog.C2_IMAGENET_MODELS[name]
         url = "/".join([prefix, name])
         return url
@@ -235,7 +220,7 @@ class ModelCatalog(object):
         dataset_tag = "keypoints_" if "keypoint" in name else ""
         suffix = ModelCatalog.C2_DETECTRON_SUFFIX.format(dataset_tag, dataset_tag)
         # remove identification prefix
-        name = name[len("Caffe2Detectron/COCO/"):]
+        name = name[len("Caffe2Detectron/COCO/") :]
         # split in <model_id> and <model_name>
         model_id, model_name = name.split("/")
         # parsing to make it match the url address from the Caffe2 models

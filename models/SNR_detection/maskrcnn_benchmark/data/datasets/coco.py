@@ -38,7 +38,12 @@ def has_valid_annotation(anno):
 
 class COCODataset(torchvision.datasets.coco.CocoDetection):
     def __init__(
-        self, ann_file, root, remove_images_without_annotations, transforms=None, is_source= True
+        self,
+        ann_file,
+        root,
+        remove_images_without_annotations,
+        transforms=None,
+        is_source=True,
     ):
         super(COCODataset, self).__init__(root, ann_file)
         # sort indices for reproducible results
@@ -84,7 +89,11 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
         masks = SegmentationMask(masks, img.size)
         target.add_field("masks", masks)
 
-        domain_labels = torch.ones_like(classes, dtype=torch.uint8) if self.is_source else torch.zeros_like(classes, dtype=torch.uint8)
+        domain_labels = (
+            torch.ones_like(classes, dtype=torch.uint8)
+            if self.is_source
+            else torch.zeros_like(classes, dtype=torch.uint8)
+        )
         target.add_field("is_source", domain_labels)
 
         if anno and "keypoints" in anno[0]:

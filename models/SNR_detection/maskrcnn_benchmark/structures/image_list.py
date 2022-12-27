@@ -24,7 +24,7 @@ class ImageList(object):
     def to(self, *args, **kwargs):
         cast_tensor = self.tensors.to(*args, **kwargs)
         return ImageList(cast_tensor, self.image_sizes)
-    
+
     def __add__(self, other):
         tensors = [self.tensors, other.tensors]
         max_size = tuple(max(s) for s in zip(*[img.shape for img in tensors]))
@@ -33,10 +33,16 @@ class ImageList(object):
         batch_shape = tuple(max_size)
         batched_imgs = tensors[0].new(*batch_shape).zero_()
         for i, img in enumerate(self.tensors):
-            batched_imgs[i, :img.shape[0], :img.shape[1], :img.shape[2]].copy_(img)
+            batched_imgs[i, : img.shape[0], : img.shape[1], : img.shape[2]].copy_(img)
         for i, img in enumerate(other.tensors):
-            batched_imgs[i+self.tensors.shape[0], :img.shape[0], :img.shape[1], :img.shape[2]].copy_(img)
-        return ImageList(batched_imgs, self.image_sizes+other.image_sizes)
+            batched_imgs[
+                i + self.tensors.shape[0],
+                : img.shape[0],
+                : img.shape[1],
+                : img.shape[2],
+            ].copy_(img)
+        return ImageList(batched_imgs, self.image_sizes + other.image_sizes)
+
 
 def to_image_list(tensors, size_divisible=0):
     """

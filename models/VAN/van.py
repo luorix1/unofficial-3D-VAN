@@ -19,13 +19,24 @@ class VAN(nn.Module):
         self.num_betas = 10
         self.batch_size = 1
 
-        self.star = STAR(gender='neutral')
+        self.star = STAR(gender="neutral")
         self.betas = torch.from_numpy(
             np.array(
                 [
-                np.array([ 2.25176191, -3.7883464, 0.46747496, 3.89178988,
-                        2.20098416, 0.26102114, -3.07428093, 0.55708514,
-                        -3.94442258, -2.88552087])
+                    np.array(
+                        [
+                            2.25176191,
+                            -3.7883464,
+                            0.46747496,
+                            3.89178988,
+                            2.20098416,
+                            0.26102114,
+                            -3.07428093,
+                            0.55708514,
+                            -3.94442258,
+                            -2.88552087,
+                        ]
+                    )
                 ]
             )
         ).to(self.device)

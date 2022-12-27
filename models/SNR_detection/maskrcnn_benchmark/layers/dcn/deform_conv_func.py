@@ -7,7 +7,6 @@ from maskrcnn_benchmark import _C
 
 
 class DeformConvFunction(Function):
-
     @staticmethod
     def forward(
         ctx,
@@ -19,12 +18,14 @@ class DeformConvFunction(Function):
         dilation=1,
         groups=1,
         deformable_groups=1,
-        im2col_step=64
+        im2col_step=64,
     ):
         if input is not None and input.dim() != 4:
             raise ValueError(
                 "Expected 4D tensor as input, got {}D tensor instead.".format(
-                    input.dim()))
+                    input.dim()
+                )
+            )
         ctx.stride = _pair(stride)
         ctx.padding = _pair(padding)
         ctx.dilation = _pair(dilation)
@@ -35,8 +36,10 @@ class DeformConvFunction(Function):
         ctx.save_for_backward(input, offset, weight)
 
         output = input.new_empty(
-            DeformConvFunction._output_size(input, weight, ctx.padding,
-                                            ctx.dilation, ctx.stride))
+            DeformConvFunction._output_size(
+                input, weight, ctx.padding, ctx.dilation, ctx.stride
+            )
+        )
 
         ctx.bufs_ = [input.new_empty(0), input.new_empty(0)]  # columns, ones
 
@@ -44,8 +47,9 @@ class DeformConvFunction(Function):
             raise NotImplementedError
         else:
             cur_im2col_step = min(ctx.im2col_step, input.shape[0])
-            assert (input.shape[0] %
-                    cur_im2col_step) == 0, 'im2col step must divide batchsize'
+            assert (
+                input.shape[0] % cur_im2col_step
+            ) == 0, "im2col step must divide batchsize"
             _C.deform_conv_forward(
                 input,
                 weight,
@@ -63,7 +67,7 @@ class DeformConvFunction(Function):
                 ctx.dilation[0],
                 ctx.groups,
                 ctx.deformable_groups,
-                cur_im2col_step
+                cur_im2col_step,
             )
         return output
 
@@ -78,8 +82,9 @@ class DeformConvFunction(Function):
             raise NotImplementedError
         else:
             cur_im2col_step = min(ctx.im2col_step, input.shape[0])
-            assert (input.shape[0] %
-                    cur_im2col_step) == 0, 'im2col step must divide batchsize'
+            assert (
+                input.shape[0] % cur_im2col_step
+            ) == 0, "im2col step must divide batchsize"
 
             if ctx.needs_input_grad[0] or ctx.needs_input_grad[1]:
                 grad_input = torch.zeros_like(input)
@@ -102,7 +107,7 @@ class DeformConvFunction(Function):
                     ctx.dilation[0],
                     ctx.groups,
                     ctx.deformable_groups,
-                    cur_im2col_step
+                    cur_im2col_step,
                 )
 
             if ctx.needs_input_grad[2]:
@@ -125,7 +130,7 @@ class DeformConvFunction(Function):
                     ctx.groups,
                     ctx.deformable_groups,
                     1,
-                    cur_im2col_step
+                    cur_im2col_step,
                 )
 
         return (grad_input, grad_offset, grad_weight, None, None, None, None, None)
@@ -139,16 +144,17 @@ class DeformConvFunction(Function):
             pad = padding[d]
             kernel = dilation[d] * (weight.size(d + 2) - 1) + 1
             stride_ = stride[d]
-            output_size += ((in_size + (2 * pad) - kernel) // stride_ + 1, )
+            output_size += ((in_size + (2 * pad) - kernel) // stride_ + 1,)
         if not all(map(lambda s: s > 0, output_size)):
             raise ValueError(
                 "convolution input is too small (output would be {})".format(
-                    'x'.join(map(str, output_size))))
+                    "x".join(map(str, output_size))
+                )
+            )
         return output_size
 
 
 class ModulatedDeformConvFunction(Function):
-
     @staticmethod
     def forward(
         ctx,
@@ -161,7 +167,7 @@ class ModulatedDeformConvFunction(Function):
         padding=0,
         dilation=1,
         groups=1,
-        deformable_groups=1
+        deformable_groups=1,
     ):
         ctx.stride = stride
         ctx.padding = padding
@@ -173,11 +179,16 @@ class ModulatedDeformConvFunction(Function):
             bias = input.new_empty(1)  # fake tensor
         if not input.is_cuda:
             raise NotImplementedError
-        if weight.requires_grad or mask.requires_grad or offset.requires_grad \
-                or input.requires_grad:
+        if (
+            weight.requires_grad
+            or mask.requires_grad
+            or offset.requires_grad
+            or input.requires_grad
+        ):
             ctx.save_for_backward(input, offset, mask, weight, bias)
         output = input.new_empty(
-            ModulatedDeformConvFunction._infer_shape(ctx, input, weight))
+            ModulatedDeformConvFunction._infer_shape(ctx, input, weight)
+        )
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
         _C.modulated_deform_conv_forward(
             input,
@@ -198,7 +209,7 @@ class ModulatedDeformConvFunction(Function):
             ctx.dilation,
             ctx.groups,
             ctx.deformable_groups,
-            ctx.with_bias
+            ctx.with_bias,
         )
         return output
 
@@ -237,13 +248,23 @@ class ModulatedDeformConvFunction(Function):
             ctx.dilation,
             ctx.groups,
             ctx.deformable_groups,
-            ctx.with_bias
+            ctx.with_bias,
         )
         if not ctx.with_bias:
             grad_bias = None
 
-        return (grad_input, grad_offset, grad_mask, grad_weight, grad_bias,
-                None, None, None, None, None)
+        return (
+            grad_input,
+            grad_offset,
+            grad_mask,
+            grad_weight,
+            grad_bias,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
 
     @staticmethod
     def _infer_shape(ctx, input, weight):
@@ -251,10 +272,12 @@ class ModulatedDeformConvFunction(Function):
         channels_out = weight.size(0)
         height, width = input.shape[2:4]
         kernel_h, kernel_w = weight.shape[2:4]
-        height_out = (height + 2 * ctx.padding -
-                      (ctx.dilation * (kernel_h - 1) + 1)) // ctx.stride + 1
-        width_out = (width + 2 * ctx.padding -
-                     (ctx.dilation * (kernel_w - 1) + 1)) // ctx.stride + 1
+        height_out = (
+            height + 2 * ctx.padding - (ctx.dilation * (kernel_h - 1) + 1)
+        ) // ctx.stride + 1
+        width_out = (
+            width + 2 * ctx.padding - (ctx.dilation * (kernel_w - 1) + 1)
+        ) // ctx.stride + 1
         return n, channels_out, height_out, width_out
 
 

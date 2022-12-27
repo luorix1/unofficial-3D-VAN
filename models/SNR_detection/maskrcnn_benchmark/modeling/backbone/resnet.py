@@ -78,6 +78,7 @@ ResNet152FPNStagesTo5 = tuple(
     for (i, c, r) in ((1, 3, True), (2, 8, True), (3, 36, True), (4, 3, True))
 )
 
+
 class ResNet(nn.Module):
     def __init__(self, cfg):
         super(ResNet, self).__init__()
@@ -156,7 +157,7 @@ class ResNetHead(nn.Module):
         stride_in_1x1=True,
         stride_init=None,
         res2_out_channels=256,
-        dilation=1
+        dilation=1,
     ):
         super(ResNetHead, self).__init__()
 
@@ -183,7 +184,7 @@ class ResNetHead(nn.Module):
                 num_groups,
                 stride_in_1x1,
                 first_stride=stride,
-                dilation=dilation
+                dilation=dilation,
             )
             stride = None
             self.add_module(name, module)
@@ -204,7 +205,7 @@ def _make_stage(
     num_groups,
     stride_in_1x1,
     first_stride,
-    dilation=1
+    dilation=1,
 ):
     blocks = []
     stride = first_stride
@@ -217,7 +218,7 @@ def _make_stage(
                 num_groups,
                 stride_in_1x1,
                 stride,
-                dilation=dilation
+                dilation=dilation,
             )
         )
         stride = 1
@@ -235,7 +236,7 @@ class Bottleneck(nn.Module):
         stride_in_1x1,
         stride,
         dilation,
-        norm_func
+        norm_func,
     ):
         super(Bottleneck, self).__init__()
 
@@ -244,18 +245,23 @@ class Bottleneck(nn.Module):
             down_stride = stride if dilation == 1 else 1
             self.downsample = nn.Sequential(
                 Conv2d(
-                    in_channels, out_channels,
-                    kernel_size=1, stride=down_stride, bias=False
+                    in_channels,
+                    out_channels,
+                    kernel_size=1,
+                    stride=down_stride,
+                    bias=False,
                 ),
                 norm_func(out_channels),
             )
-            for modules in [self.downsample,]:
+            for modules in [
+                self.downsample,
+            ]:
                 for l in modules.modules():
                     if isinstance(l, Conv2d):
                         nn.init.kaiming_uniform_(l.weight, a=1)
 
         if dilation > 1:
-            stride = 1 # reset to be 1
+            stride = 1  # reset to be 1
 
         # The original MSRA ResNet models have stride in the first 1x1 conv
         # The subsequent fb.torch.resnet and Caffe2 ResNe[X]t implementations have
@@ -280,7 +286,7 @@ class Bottleneck(nn.Module):
             padding=dilation,
             bias=False,
             groups=num_groups,
-            dilation=dilation
+            dilation=dilation,
         )
         self.bn2 = norm_func(bottleneck_channels)
 
@@ -289,7 +295,11 @@ class Bottleneck(nn.Module):
         )
         self.bn3 = norm_func(out_channels)
 
-        for l in [self.conv1, self.conv2, self.conv3,]:
+        for l in [
+            self.conv1,
+            self.conv2,
+            self.conv3,
+        ]:
             nn.init.kaiming_uniform_(l.weight, a=1)
 
     def forward(self, x):
@@ -326,7 +336,9 @@ class BaseStem(nn.Module):
         )
         self.bn1 = norm_func(out_channels)
 
-        for l in [self.conv1,]:
+        for l in [
+            self.conv1,
+        ]:
             nn.init.kaiming_uniform_(l.weight, a=1)
 
     def forward(self, x):
@@ -346,7 +358,7 @@ class BottleneckWithFixedBatchNorm(Bottleneck):
         num_groups=1,
         stride_in_1x1=True,
         stride=1,
-        dilation=1
+        dilation=1,
     ):
         super(BottleneckWithFixedBatchNorm, self).__init__(
             in_channels=in_channels,
@@ -356,15 +368,13 @@ class BottleneckWithFixedBatchNorm(Bottleneck):
             stride_in_1x1=stride_in_1x1,
             stride=stride,
             dilation=dilation,
-            norm_func=FrozenBatchNorm2d
+            norm_func=FrozenBatchNorm2d,
         )
 
 
 class StemWithFixedBatchNorm(BaseStem):
     def __init__(self, cfg):
-        super(StemWithFixedBatchNorm, self).__init__(
-            cfg, norm_func=FrozenBatchNorm2d
-        )
+        super(StemWithFixedBatchNorm, self).__init__(cfg, norm_func=FrozenBatchNorm2d)
 
 
 class BottleneckWithGN(Bottleneck):
@@ -376,7 +386,7 @@ class BottleneckWithGN(Bottleneck):
         num_groups=1,
         stride_in_1x1=True,
         stride=1,
-        dilation=1
+        dilation=1,
     ):
         super(BottleneckWithGN, self).__init__(
             in_channels=in_channels,
@@ -386,7 +396,7 @@ class BottleneckWithGN(Bottleneck):
             stride_in_1x1=stride_in_1x1,
             stride=stride,
             dilation=dilation,
-            norm_func=group_norm
+            norm_func=group_norm,
         )
 
 
@@ -395,57 +405,68 @@ class StemWithGN(BaseStem):
         super(StemWithGN, self).__init__(cfg, norm_func=group_norm)
 
 
-_TRANSFORMATION_MODULES = Registry({
-    "BottleneckWithFixedBatchNorm": BottleneckWithFixedBatchNorm,
-    "BottleneckWithGN": BottleneckWithGN,
-})
+_TRANSFORMATION_MODULES = Registry(
+    {
+        "BottleneckWithFixedBatchNorm": BottleneckWithFixedBatchNorm,
+        "BottleneckWithGN": BottleneckWithGN,
+    }
+)
 
-_STEM_MODULES = Registry({
-    "StemWithFixedBatchNorm": StemWithFixedBatchNorm,
-    "StemWithGN": StemWithGN,
-})
+_STEM_MODULES = Registry(
+    {
+        "StemWithFixedBatchNorm": StemWithFixedBatchNorm,
+        "StemWithGN": StemWithGN,
+    }
+)
 
-_STAGE_SPECS = Registry({
-    "R-50-C4": ResNet50StagesTo4,
-    "R-50-C4-SNR": ResNet50StagesTo4,
-    "R-50-C5": ResNet50StagesTo5,
-    "R-101-C4": ResNet101StagesTo4,
-    "R-101-C5": ResNet101StagesTo5,
-    "R-50-FPN": ResNet50FPNStagesTo5,
-    "R-50-FPN-RETINANET": ResNet50FPNStagesTo5,
-    "R-101-FPN": ResNet101FPNStagesTo5,
-    "R-101-FPN-RETINANET": ResNet101FPNStagesTo5,
-    "R-152-FPN": ResNet152FPNStagesTo5,
-})
-
-
-
-
-
-
+_STAGE_SPECS = Registry(
+    {
+        "R-50-C4": ResNet50StagesTo4,
+        "R-50-C4-SNR": ResNet50StagesTo4,
+        "R-50-C5": ResNet50StagesTo5,
+        "R-101-C4": ResNet101StagesTo4,
+        "R-101-C5": ResNet101StagesTo5,
+        "R-50-FPN": ResNet50FPNStagesTo5,
+        "R-50-FPN-RETINANET": ResNet50FPNStagesTo5,
+        "R-101-FPN": ResNet101FPNStagesTo5,
+        "R-101-FPN-RETINANET": ResNet101FPNStagesTo5,
+        "R-152-FPN": ResNet152FPNStagesTo5,
+    }
+)
 
 
 class ChannelGate_sub(nn.Module):
     """A mini-network that generates channel-wise gates conditioned on input tensor."""
 
-    def __init__(self, in_channels, num_gates=None, return_gates=False,
-                 gate_activation='sigmoid', reduction=16, layer_norm=False):
+    def __init__(
+        self,
+        in_channels,
+        num_gates=None,
+        return_gates=False,
+        gate_activation="sigmoid",
+        reduction=16,
+        layer_norm=False,
+    ):
         super(ChannelGate_sub, self).__init__()
         if num_gates is None:
             num_gates = in_channels
         self.return_gates = return_gates
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Conv2d(in_channels, in_channels//reduction, kernel_size=1, bias=True, padding=0)
+        self.fc1 = nn.Conv2d(
+            in_channels, in_channels // reduction, kernel_size=1, bias=True, padding=0
+        )
         self.norm1 = None
         if layer_norm:
-            self.norm1 = nn.LayerNorm((in_channels//reduction, 1, 1))
+            self.norm1 = nn.LayerNorm((in_channels // reduction, 1, 1))
         self.relu = nn.ReLU(inplace=True)
-        self.fc2 = nn.Conv2d(in_channels//reduction, num_gates, kernel_size=1, bias=True, padding=0)
-        if gate_activation == 'sigmoid':
+        self.fc2 = nn.Conv2d(
+            in_channels // reduction, num_gates, kernel_size=1, bias=True, padding=0
+        )
+        if gate_activation == "sigmoid":
             self.gate_activation = nn.Sigmoid()
-        elif gate_activation == 'relu':
+        elif gate_activation == "relu":
             self.gate_activation = nn.ReLU(inplace=True)
-        elif gate_activation == 'linear':
+        elif gate_activation == "linear":
             self.gate_activation = None
         else:
             raise RuntimeError("Unknown gate activation: {}".format(gate_activation))
@@ -462,16 +483,14 @@ class ChannelGate_sub(nn.Module):
             x = self.gate_activation(x)
         if self.return_gates:
             return x
-        return input * x #, input * (1 - x), x
+        return input * x  # , input * (1 - x), x
 
 
 class ResNet_SNR(nn.Module):
-
     def __init__(self, block, layers):
         self.inplanes = 64
         super(ResNet_SNR, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -486,21 +505,39 @@ class ResNet_SNR(nn.Module):
         self.IN1 = nn.InstanceNorm2d(256, affine=True)
         self.IN2 = nn.InstanceNorm2d(512, affine=True)
         self.IN3 = nn.InstanceNorm2d(1024, affine=True)
-        #self.IN4 = nn.InstanceNorm2d(512, affine=True)
+        # self.IN4 = nn.InstanceNorm2d(512, affine=True)
 
         # SE for selection:
-        self.style_reid_laye1 = ChannelGate_sub(256, num_gates=256, return_gates=False,
-                 gate_activation='sigmoid', reduction=16, layer_norm=False)
-        self.style_reid_laye2 = ChannelGate_sub(512, num_gates=512, return_gates=False,
-                 gate_activation='sigmoid', reduction=16, layer_norm=False)
-        self.style_reid_laye3 = ChannelGate_sub(1024, num_gates=1024, return_gates=False,
-                 gate_activation='sigmoid', reduction=16, layer_norm=False)
+        self.style_reid_laye1 = ChannelGate_sub(
+            256,
+            num_gates=256,
+            return_gates=False,
+            gate_activation="sigmoid",
+            reduction=16,
+            layer_norm=False,
+        )
+        self.style_reid_laye2 = ChannelGate_sub(
+            512,
+            num_gates=512,
+            return_gates=False,
+            gate_activation="sigmoid",
+            reduction=16,
+            layer_norm=False,
+        )
+        self.style_reid_laye3 = ChannelGate_sub(
+            1024,
+            num_gates=1024,
+            return_gates=False,
+            gate_activation="sigmoid",
+            reduction=16,
+            layer_norm=False,
+        )
         # self.style_reid_laye4 = ChannelGate_sub(512, num_gates=512, return_gates=False,
         #          gate_activation='sigmoid', reduction=16, layer_norm=False)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm2d):
@@ -526,8 +563,13 @@ class ResNet_SNR(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
@@ -538,7 +580,6 @@ class ResNet_SNR(nn.Module):
             layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
-
 
     def forward(self, x):
 
@@ -551,16 +592,23 @@ class ResNet_SNR(nn.Module):
         x_1_ori = x_1
         x_IN_1 = self.IN1(x_1)
         x_style_1 = x_1 - x_IN_1
-        x_style_1_reid_useful, x_style_1_reid_useless, selective_weight_useful_1 = self.style_reid_laye1(x_style_1)
+        (
+            x_style_1_reid_useful,
+            x_style_1_reid_useless,
+            selective_weight_useful_1,
+        ) = self.style_reid_laye1(x_style_1)
         x_1 = x_IN_1 + x_style_1_reid_useful
         x_1_useless = x_IN_1 + x_style_1_reid_useless
-
 
         x_2 = self.layer2(x_1)  # torch.Size([64, 512, 32, 16])
         x_2_ori = x_2
         x_IN_2 = self.IN2(x_2)
         x_style_2 = x_2 - x_IN_2
-        x_style_2_reid_useful, x_style_2_reid_useless, selective_weight_useful_2 = self.style_reid_laye2(x_style_2)
+        (
+            x_style_2_reid_useful,
+            x_style_2_reid_useless,
+            selective_weight_useful_2,
+        ) = self.style_reid_laye2(x_style_2)
         x_2 = x_IN_2 + x_style_2_reid_useful
         x_2_useless = x_IN_2 + x_style_2_reid_useless
 
@@ -568,7 +616,11 @@ class ResNet_SNR(nn.Module):
         x_3_ori = x_3
         x_IN_3 = self.IN3(x_3)
         x_style_3 = x_3 - x_IN_3
-        x_style_3_reid_useful, x_style_3_reid_useless, selective_weight_useful_3 = self.style_reid_laye3(x_style_3)
+        (
+            x_style_3_reid_useful,
+            x_style_3_reid_useless,
+            selective_weight_useful_3,
+        ) = self.style_reid_laye3(x_style_3)
         x_3 = x_IN_3 + x_style_3_reid_useful
         x_3_useless = x_IN_3 + x_style_3_reid_useless
 
@@ -580,6 +632,7 @@ class ResNet_SNR(nn.Module):
         # end_points['Feature'] = x_4
 
         return x_4
+
 
 class ResNet_SNR_v2(nn.Module):
     def __init__(self, cfg):
@@ -623,15 +676,22 @@ class ResNet_SNR_v2(nn.Module):
                 first_stride=int(stage_spec.index > 1) + 1,
             )
             # SNR module:
-            SNR_module = nn.Sequential(nn.InstanceNorm2d(in_channels, affine=True),
-                                       ChannelGate_sub(in_channels, num_gates=in_channels, return_gates=False,
-                                                       gate_activation='sigmoid', reduction=8, layer_norm=False)
-                                       )
+            SNR_module = nn.Sequential(
+                nn.InstanceNorm2d(in_channels, affine=True),
+                ChannelGate_sub(
+                    in_channels,
+                    num_gates=in_channels,
+                    return_gates=False,
+                    gate_activation="sigmoid",
+                    reduction=8,
+                    layer_norm=False,
+                ),
+            )
 
             in_channels = out_channels
             self.add_module(name, module)
-            #if count <= 3:
-            self.add_module(name+'_SNR', SNR_module)
+            # if count <= 3:
+            self.add_module(name + "_SNR", SNR_module)
             self.stages.append(name)
             self.return_features[name] = stage_spec.return_features
 

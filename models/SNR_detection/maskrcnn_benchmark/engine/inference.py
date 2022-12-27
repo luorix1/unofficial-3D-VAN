@@ -52,26 +52,26 @@ def _accumulate_predictions_from_multiple_gpus(predictions_per_gpu):
 
 
 def inference(
-        model,
-        data_loader,
-        dataset_name,
-        iou_types=("bbox",),
-        box_only=False,
-        device="cuda",
-        expected_results=(),
-        expected_results_sigma_tol=4,
-        output_folder=None,
+    model,
+    data_loader,
+    dataset_name,
+    iou_types=("bbox",),
+    box_only=False,
+    device="cuda",
+    expected_results=(),
+    expected_results_sigma_tol=4,
+    output_folder=None,
 ):
     # convert to a torch.device for efficiency
     device = torch.device(device)
     num_devices = (
-        torch.distributed.get_world_size()
-        if torch.distributed.is_initialized()
-        else 1
+        torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
     )
     logger = logging.getLogger("maskrcnn_benchmark.inference")
     dataset = data_loader.dataset
-    logger.info("Start evaluation on {} dataset({} images).".format(dataset_name, len(dataset)))
+    logger.info(
+        "Start evaluation on {} dataset({} images).".format(dataset_name, len(dataset))
+    )
     start_time = time.time()
     predictions = compute_on_dataset(model, data_loader, device)
     # wait for all processes to complete before measuring the time
@@ -98,7 +98,9 @@ def inference(
         expected_results_sigma_tol=expected_results_sigma_tol,
     )
 
-    return evaluate(dataset=dataset,
-                    predictions=predictions,
-                    output_folder=output_folder,
-                    **extra_args)
+    return evaluate(
+        dataset=dataset,
+        predictions=predictions,
+        output_folder=output_folder,
+        **extra_args
+    )

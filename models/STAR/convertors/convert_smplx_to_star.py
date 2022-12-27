@@ -24,31 +24,47 @@ from losses import convert_smplx_2_star
 from star.pytorch.star import STAR
 
 ########################################################################################################################
-path_smplx_meshes = 'samples/smplx_meshes.npy'      #Path SMP-XL Meshes, a numpy array of SMPL verticies (batch_size x 6890 x 3)
-path_save_star_parms = 'smplx2_star_meshes.npy' #Path to save the star paramters
-star_gender = 'male'   #STAR Model Gender (options: male,female,neutral).
-MAX_ITER_EDGES = 100   #Number of LBFGS iterations for an on edges objective
-MAX_ITER_VERTS = 500   #Number of LBFGS iterations for an on vertices objective
+path_smplx_meshes = "samples/smplx_meshes.npy"  # Path SMP-XL Meshes, a numpy array of SMPL verticies (batch_size x 6890 x 3)
+path_save_star_parms = "smplx2_star_meshes.npy"  # Path to save the star paramters
+star_gender = "male"  # STAR Model Gender (options: male,female,neutral).
+MAX_ITER_EDGES = 100  # Number of LBFGS iterations for an on edges objective
+MAX_ITER_VERTS = 500  # Number of LBFGS iterations for an on vertices objective
 NUM_BETAS = 20
 ########################################################################################################################
 
 
 if not os.path.exists(path_smplx_meshes):
-    raise RuntimeError('Path to Meshes does not exist! %s'%(path_smplx_meshes))
+    raise RuntimeError("Path to Meshes does not exist! %s" % (path_smplx_meshes))
 
-opt_parms = {'MAX_ITER_EDGES':MAX_ITER_EDGES ,
-             'MAX_ITER_VERTS':MAX_ITER_VERTS,
-             'NUM_BETAS':NUM_BETAS,
-             'GENDER':star_gender}
+opt_parms = {
+    "MAX_ITER_EDGES": MAX_ITER_EDGES,
+    "MAX_ITER_VERTS": MAX_ITER_VERTS,
+    "NUM_BETAS": NUM_BETAS,
+    "GENDER": star_gender,
+}
 
-print('Loading the SMPL-X Meshes...')
+print("Loading the SMPL-X Meshes...")
 smplx = np.load(path_smplx_meshes)
-def_transfer = np.load('def_transfer_smplx.npy', allow_pickle=True, encoding='latin1')[()]['mtx']
-*smplx, = smplx
-smplx = np.stack([def_transfer.dot(np.vstack((smplx_i,np.zeros_like(smplx_i)))) for smplx_i in smplx])
+def_transfer = np.load("def_transfer_smplx.npy", allow_pickle=True, encoding="latin1")[
+    ()
+]["mtx"]
+(*smplx,) = smplx
+smplx = np.stack(
+    [
+        def_transfer.dot(np.vstack((smplx_i, np.zeros_like(smplx_i))))
+        for smplx_i in smplx
+    ]
+)
 
-np_poses , np_betas , np_trans , star_verts , star_f = convert_smplx_2_star(smplx,**opt_parms)
+np_poses, np_betas, np_trans, star_verts, star_f = convert_smplx_2_star(
+    smplx, **opt_parms
+)
 
-results = {'poses':np_poses,'betas':np_betas,'trans':np_trans,'star_verts':star_verts}
-print('Saving the results %s.'%(path_save_star_parms))
-np.save(path_save_star_parms,results)
+results = {
+    "poses": np_poses,
+    "betas": np_betas,
+    "trans": np_trans,
+    "star_verts": star_verts,
+}
+print("Saving the results %s." % (path_save_star_parms))
+np.save(path_save_star_parms, results)

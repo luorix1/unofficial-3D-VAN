@@ -1,5 +1,6 @@
 import torch
 
+
 class AbstractDataset(torch.utils.data.Dataset):
     """
     Serves as a common interface to reduce boilerplate and help dataset
@@ -31,10 +32,8 @@ class AbstractDataset(torch.utils.data.Dataset):
         self.name_to_id = None
         self.id_to_name = None
 
-
     def __getitem__(self, idx):
         raise NotImplementedError
-
 
     def initMaps(self):
         """
@@ -59,10 +58,8 @@ class AbstractDataset(torch.utils.data.Dataset):
         self.name_to_id = dict(zip(cls, range(len(cls))))
         self.id_to_name = dict(zip(range(len(cls)), cls))
 
-
     def get_img_info(self, index):
         raise NotImplementedError
-
 
     def __len__(self):
         raise NotImplementedError

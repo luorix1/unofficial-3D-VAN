@@ -10,7 +10,8 @@ class _GradientScalarLayer(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         grad_input = grad_output.clone()
-        return ctx.weight*grad_input, None
+        return ctx.weight * grad_input, None
+
 
 gradient_scalar = _GradientScalarLayer.apply
 

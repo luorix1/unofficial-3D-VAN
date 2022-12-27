@@ -114,6 +114,7 @@ def do_train(
         )
     )
 
+
 def do_da_train(
     model,
     source_data_loader,
@@ -124,7 +125,7 @@ def do_da_train(
     device,
     checkpoint_period,
     arguments,
-    cfg
+    cfg,
 ):
     logger = logging.getLogger("maskrcnn_benchmark.trainer")
     logger.info("Start training")
@@ -134,12 +135,17 @@ def do_da_train(
     model.train()
     start_training_time = time.time()
     end = time.time()
-    for iteration, ((source_images, source_targets, idx1), (target_images, target_targets, idx2)) in enumerate(zip(source_data_loader, target_data_loader), start_iter):
+    for iteration, (
+        (source_images, source_targets, idx1),
+        (target_images, target_targets, idx2),
+    ) in enumerate(zip(source_data_loader, target_data_loader), start_iter):
         data_time = time.time() - end
         arguments["iteration"] = iteration
 
-        images = (source_images+target_images).to(device)
-        targets = [target.to(device) for target in list(source_targets+target_targets)]
+        images = (source_images + target_images).to(device)
+        targets = [
+            target.to(device) for target in list(source_targets + target_targets)
+        ]
 
         loss_dict = model(images, targets)
 
@@ -153,7 +159,7 @@ def do_da_train(
         optimizer.zero_grad()
         losses.backward()
         optimizer.step()
-        
+
         scheduler.step()
 
         batch_time = time.time() - end
@@ -182,12 +188,19 @@ def do_da_train(
                 )
             )
         if iteration % checkpoint_period == 0:
-            checkpointer.save("./saved_weights/baseline_cityscape2foggy/model_{:07d}".format(iteration), **arguments)
-        if iteration == max_iter-1:
-            checkpointer.save("./saved_weights/baseline_cityscape2foggy/model_final", **arguments)
+            checkpointer.save(
+                "./saved_weights/baseline_cityscape2foggy/model_{:07d}".format(
+                    iteration
+                ),
+                **arguments
+            )
+        if iteration == max_iter - 1:
+            checkpointer.save(
+                "./saved_weights/baseline_cityscape2foggy/model_final", **arguments
+            )
         if torch.isnan(losses_reduced).any():
-            logger.critical('Loss is NaN, exiting...')
-            return 
+            logger.critical("Loss is NaN, exiting...")
+            return
 
     total_training_time = time.time() - start_training_time
     total_time_str = str(datetime.timedelta(seconds=total_training_time))

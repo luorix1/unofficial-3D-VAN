@@ -22,10 +22,11 @@
 from star.tf.star import STAR
 import tensorflow as tf
 import numpy as np
+
 batch_size = 10
-gender = 'male'
+gender = "male"
 star = STAR()
-trans = tf.constant(np.zeros((1,3)),dtype=tf.float32)
-pose = tf.constant(np.zeros((1,72)),dtype=tf.float32)
-betas = tf.constant(np.zeros((1,10)),dtype=tf.float32)
-print(star(pose,betas,trans))
+trans = tf.constant(np.zeros((1, 3)), dtype=tf.float32)
+pose = tf.constant(np.zeros((1, 72)), dtype=tf.float32)
+betas = tf.constant(np.zeros((1, 10)), dtype=tf.float32)
+print(star(pose, betas, trans))

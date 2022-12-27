@@ -7,6 +7,7 @@ from maskrcnn_benchmark.layers import GradientScalarLayer
 
 from .loss import make_da_heads_loss_evaluator
 
+
 class DAImgHead(nn.Module):
     """
     Adds a simple Image-level Domain Classifier head
@@ -19,7 +20,7 @@ class DAImgHead(nn.Module):
             USE_FPN (boolean): whether FPN feature extractor is used
         """
         super(DAImgHead, self).__init__()
-        
+
         self.conv1_da = nn.Conv2d(in_channels, 512, kernel_size=1, stride=1)
         self.conv2_da = nn.Conv2d(512, 1, kernel_size=1, stride=1)
 
@@ -80,20 +81,32 @@ class DomainAdaptationModule(torch.nn.Module):
         stage_index = 4
         stage2_relative_factor = 2 ** (stage_index - 1)
         res2_out_channels = cfg.MODEL.RESNETS.RES2_OUT_CHANNELS
-        num_ins_inputs = cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM if cfg.MODEL.BACKBONE.CONV_BODY.startswith('V') else res2_out_channels * stage2_relative_factor
-        
-        self.resnet_backbone = cfg.MODEL.BACKBONE.CONV_BODY.startswith('R')
+        num_ins_inputs = (
+            cfg.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM
+            if cfg.MODEL.BACKBONE.CONV_BODY.startswith("V")
+            else res2_out_channels * stage2_relative_factor
+        )
+
+        self.resnet_backbone = cfg.MODEL.BACKBONE.CONV_BODY.startswith("R")
         self.avgpool = nn.AvgPool2d(kernel_size=7, stride=7)
-        
+
         self.img_weight = cfg.MODEL.DA_HEADS.DA_IMG_LOSS_WEIGHT
         self.ins_weight = cfg.MODEL.DA_HEADS.DA_INS_LOSS_WEIGHT
         self.cst_weight = cfg.MODEL.DA_HEADS.DA_CST_LOSS_WEIGHT
 
-        self.grl_img = GradientScalarLayer(-1.0*self.cfg.MODEL.DA_HEADS.DA_IMG_GRL_WEIGHT)
-        self.grl_ins = GradientScalarLayer(-1.0*self.cfg.MODEL.DA_HEADS.DA_INS_GRL_WEIGHT)
-        self.grl_img_consist = GradientScalarLayer(1.0*self.cfg.MODEL.DA_HEADS.DA_IMG_GRL_WEIGHT)
-        self.grl_ins_consist = GradientScalarLayer(1.0*self.cfg.MODEL.DA_HEADS.DA_INS_GRL_WEIGHT)
-        
+        self.grl_img = GradientScalarLayer(
+            -1.0 * self.cfg.MODEL.DA_HEADS.DA_IMG_GRL_WEIGHT
+        )
+        self.grl_ins = GradientScalarLayer(
+            -1.0 * self.cfg.MODEL.DA_HEADS.DA_INS_GRL_WEIGHT
+        )
+        self.grl_img_consist = GradientScalarLayer(
+            1.0 * self.cfg.MODEL.DA_HEADS.DA_IMG_GRL_WEIGHT
+        )
+        self.grl_ins_consist = GradientScalarLayer(
+            1.0 * self.cfg.MODEL.DA_HEADS.DA_INS_GRL_WEIGHT
+        )
+
         in_channels = cfg.MODEL.BACKBONE.OUT_CHANNELS
 
         self.imghead = DAImgHead(in_channels)
@@ -130,7 +143,12 @@ class DomainAdaptationModule(torch.nn.Module):
         da_ins_consist_features = da_ins_consist_features.sigmoid()
         if self.training:
             da_img_loss, da_ins_loss, da_consistency_loss = self.loss_evaluator(
-                da_img_features, da_ins_features, da_img_consist_features, da_ins_consist_features, da_ins_labels, targets
+                da_img_features,
+                da_ins_features,
+                da_img_consist_features,
+                da_ins_consist_features,
+                da_ins_labels,
+                targets,
             )
             losses = {}
             if self.img_weight > 0:
@@ -141,6 +159,7 @@ class DomainAdaptationModule(torch.nn.Module):
                 losses["loss_da_consistency"] = self.cst_weight * da_consistency_loss
             return losses
         return {}
+
 
 def build_da_heads(cfg):
     if cfg.MODEL.DOMAIN_ADAPTATION_ON:

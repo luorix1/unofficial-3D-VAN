@@ -4,21 +4,23 @@ import torchvision.models.resnet as resnet
 import numpy as np
 import math
 from collections import OrderedDict
-from .utils.geometry import rot6d_to_rotmat
+from models.RSC_net.utils.geometry import rot6d_to_rotmat
 
 
 class Bottleneck(nn.Module):
-    """ Redefinition of Bottleneck residual block
-        Adapted from the official PyTorch implementation
+    """Redefinition of Bottleneck residual block
+    Adapted from the official PyTorch implementation
     """
+
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
@@ -57,8 +59,13 @@ class HMRLayer(nn.Module):
         downsample = None
         if stride != 1 or self.in_planes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.in_planes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(
+                    self.in_planes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
                 nn.BatchNorm2d(planes * block.expansion),
             )
         self.hmr_layer.append(block(self.in_planes, planes, stride, downsample))
@@ -69,13 +76,35 @@ class HMRLayer(nn.Module):
         # initial alphas to [0, 0, ..., 0, 1]
         # alphas =
         # add alphas parameters
-        self.alphas = nn.ParameterDict({
-            '0': nn.Parameter(torch.from_numpy(np.ones(blocks, dtype=np.float32)).float().view(-1, 1, 1, 1, 1)),
-            '1': nn.Parameter(torch.from_numpy(np.ones(blocks, dtype=np.float32)).float().view(-1, 1, 1, 1, 1)),
-            '2': nn.Parameter(torch.from_numpy(np.ones(blocks, dtype=np.float32)).float().view(-1, 1, 1, 1, 1)),
-            '3': nn.Parameter(torch.from_numpy(np.ones(blocks, dtype=np.float32)).float().view(-1, 1, 1, 1, 1)),
-            '4': nn.Parameter(torch.from_numpy(np.ones(blocks, dtype=np.float32)).float().view(-1, 1, 1, 1, 1))
-        })
+        self.alphas = nn.ParameterDict(
+            {
+                "0": nn.Parameter(
+                    torch.from_numpy(np.ones(blocks, dtype=np.float32))
+                    .float()
+                    .view(-1, 1, 1, 1, 1)
+                ),
+                "1": nn.Parameter(
+                    torch.from_numpy(np.ones(blocks, dtype=np.float32))
+                    .float()
+                    .view(-1, 1, 1, 1, 1)
+                ),
+                "2": nn.Parameter(
+                    torch.from_numpy(np.ones(blocks, dtype=np.float32))
+                    .float()
+                    .view(-1, 1, 1, 1, 1)
+                ),
+                "3": nn.Parameter(
+                    torch.from_numpy(np.ones(blocks, dtype=np.float32))
+                    .float()
+                    .view(-1, 1, 1, 1, 1)
+                ),
+                "4": nn.Parameter(
+                    torch.from_numpy(np.ones(blocks, dtype=np.float32))
+                    .float()
+                    .view(-1, 1, 1, 1, 1)
+                ),
+            }
+        )
         self.alphas.requires_grad = True
 
     def init_alphas(self, scale, device):
@@ -83,9 +112,6 @@ class HMRLayer(nn.Module):
         scale = [1, 2, 3, 4], need to be larger than 0
         """
         self.alphas[str(scale)].data = self.alphas[str(scale - 1)].detach().clone()
-
-
-
 
     def forward(self, x, scale):
         out = x
@@ -98,17 +124,14 @@ class HMRLayer(nn.Module):
         return out
 
 
-
 class HMR(nn.Module):
-    """ SMPL Iterative Regressor with ResNet50 backbone
-    """
+    """SMPL Iterative Regressor with ResNet50 backbone"""
 
     def __init__(self, block, layers, smpl_mean_params):
         self.inplanes = 64
         super(HMR, self).__init__()
         npose = 24 * 6
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -118,9 +141,8 @@ class HMR(nn.Module):
         self.layer3 = HMRLayer(block, self.layer2.in_planes, 256, layers[2], stride=2)
         self.layer4 = HMRLayer(block, self.layer3.in_planes, 512, layers[3], stride=2)
         self.layer4_mlp = nn.Sequential(
-            nn.Linear(2048, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, 256))
+            nn.Linear(2048, 1024), nn.ReLU(), nn.Linear(1024, 256)
+        )
         self.avgpool = nn.AvgPool2d(7, stride=1)
         self.fc1 = nn.Linear(512 * block.expansion + npose + 13, 1024)
         self.drop1 = nn.Dropout()
@@ -136,26 +158,32 @@ class HMR(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
         mean_params = np.load(smpl_mean_params)
-        init_pose = torch.from_numpy(mean_params['pose'][:]).unsqueeze(0)
-        init_shape = torch.from_numpy(mean_params['shape'][:].astype('float32')).unsqueeze(0)
-        init_cam = torch.from_numpy(mean_params['cam']).unsqueeze(0)
-        self.register_buffer('init_pose', init_pose)
-        self.register_buffer('init_shape', init_shape)
-        self.register_buffer('init_cam', init_cam)
-
+        init_pose = torch.from_numpy(mean_params["pose"][:]).unsqueeze(0)
+        init_shape = torch.from_numpy(
+            mean_params["shape"][:].astype("float32")
+        ).unsqueeze(0)
+        init_cam = torch.from_numpy(mean_params["cam"]).unsqueeze(0)
+        self.register_buffer("init_pose", init_pose)
+        self.register_buffer("init_shape", init_shape)
+        self.register_buffer("init_cam", init_cam)
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
@@ -173,7 +201,9 @@ class HMR(nn.Module):
         self.layer3.init_alphas(scale, device)
         self.layer4.init_alphas(scale, device)
 
-    def forward(self, x, scale, init_pose=None, init_shape=None, init_cam=None, n_iter=3):
+    def forward(
+        self, x, scale, init_pose=None, init_shape=None, init_cam=None, n_iter=3
+    ):
 
         batch_size = x.shape[0]
 
@@ -219,39 +249,38 @@ class HMR(nn.Module):
 
         return pred_rotmat, pred_shape, pred_cam, feat_list
 
+
 def hmr(smpl_mean_params, pretrained=True, **kwargs):
-    """ Constructs an HMR model with ResNet50 backbone.
+    """Constructs an HMR model with ResNet50 backbone.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = HMR(Bottleneck, [3, 4, 6, 3],  smpl_mean_params, **kwargs)
+    model = HMR(Bottleneck, [3, 4, 6, 3], smpl_mean_params, **kwargs)
     if pretrained:
         resnet_imagenet = resnet.resnet50(pretrained=True)
         state_dict = resnet_imagenet.state_dict()
         renamed_state_dict = OrderedDict()
         # change the names in the state_dict to match the new layer
         for key, value in state_dict.items():
-            if 'layer' in key:
-                names = key.split('.')
-                names[1:1] = ['hmr_layer']
-                new_key = '.'.join(n for n in names)
+            if "layer" in key:
+                names = key.split(".")
+                names[1:1] = ["hmr_layer"]
+                new_key = ".".join(n for n in names)
                 renamed_state_dict[new_key] = value
             else:
                 renamed_state_dict[key] = value
-        model.load_state_dict(renamed_state_dict,strict=False)
+        model.load_state_dict(renamed_state_dict, strict=False)
         # state_dict = model.state_dict()
     return model
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import config
+
     a = torch.ones((1, 3, 224, 224))
     model = hmr(config.SMPL_MEAN_PARAMS, pretrained=True)
 
     for i in range(3):
         model.init_alphas(scale=i, device=None)
 
-
     out = model(a, scale=1)
-
-

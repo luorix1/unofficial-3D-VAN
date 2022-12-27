@@ -43,13 +43,17 @@ def sigmoid_focal_loss_cpu(logits, targets, gamma, alpha):
     alpha = alpha[0]
     dtype = targets.dtype
     device = targets.device
-    class_range = torch.arange(1, num_classes+1, dtype=dtype, device=device).unsqueeze(0)
+    class_range = torch.arange(
+        1, num_classes + 1, dtype=dtype, device=device
+    ).unsqueeze(0)
 
     t = targets.unsqueeze(1)
     p = torch.sigmoid(logits)
     term1 = (1 - p) ** gamma * torch.log(p)
-    term2 = p ** gamma * torch.log(1 - p)
-    return -(t == class_range).float() * term1 * alpha - ((t != class_range) * (t >= 0)).float() * term2 * (1 - alpha)
+    term2 = p**gamma * torch.log(1 - p)
+    return -(t == class_range).float() * term1 * alpha - (
+        (t != class_range) * (t >= 0)
+    ).float() * term2 * (1 - alpha)
 
 
 class SigmoidFocalLoss(nn.Module):

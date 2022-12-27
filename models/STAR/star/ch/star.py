@@ -17,55 +17,59 @@
 #
 #
 # Code Developed by:
-# Ahmed A. A. Osman 
+# Ahmed A. A. Osman
 
-import chumpy  as ch
+import chumpy as ch
 import numpy as np
 import os
-from .verts import verts_decorated_quat 
+from .verts import verts_decorated_quat
 from ..config import cfg
 
-def STAR(gender='female',num_betas=10):
 
-    if gender not in ['male','female','neutral']:
-        raise RuntimeError('Invalid model gender!')
+def STAR(gender="female", num_betas=10):
+
+    if gender not in ["male", "female", "neutral"]:
+        raise RuntimeError("Invalid model gender!")
     if num_betas < 2:
-        raise RuntimeError('Number of betas should be at least 2')
+        raise RuntimeError("Number of betas should be at least 2")
 
-    if gender == 'male':
+    if gender == "male":
         fname = cfg.path_male_star
-    elif gender == 'female':
+    elif gender == "female":
         fname = cfg.path_female_star
     else:
         fname = cfg.path_neutral_star
 
     if not os.path.exists(fname):
-        raise RuntimeError('Path does not exist %s'%(fname))
+        raise RuntimeError("Path does not exist %s" % (fname))
 
+    model_dict = np.load(fname, allow_pickle=True)
+    trans = ch.array(np.zeros(3))
+    posedirs = ch.array(model_dict["posedirs"])
+    v_tempalate = ch.array(model_dict["v_template"])
 
-    model_dict  = np.load(fname,allow_pickle=True)
-    trans       = ch.array(np.zeros(3))
-    posedirs    = ch.array(model_dict['posedirs'])
-    v_tempalate = ch.array(model_dict['v_template'])
+    J_regressor = ch.array(model_dict["J_regressor"])  # Regressor of the model
+    weights = ch.array(model_dict["weights"])  # Weights
+    num_joints = weights.shape[1]
+    kintree_table = model_dict["kintree_table"]
+    f = model_dict["f"]
+    betas = ch.array(np.zeros(num_betas))  # Betas
+    shapedirs = ch.array(
+        model_dict["shapedirs"][:, :, :num_betas]
+    )  # Shape Corrective Blend shapes
 
-    J_regressor   = ch.array(model_dict['J_regressor']) #Regressor of the model
-    weights       = ch.array(model_dict['weights']) #Weights
-    num_joints    = weights.shape[1]
-    kintree_table = model_dict['kintree_table']
-    f = model_dict['f']
-    betas = ch.array(np.zeros(num_betas)) #Betas
-    shapedirs = ch.array(model_dict['shapedirs'][:,:,:num_betas]) #Shape Corrective Blend shapes
-
-    pose = ch.array(np.zeros((num_joints*3))) #Pose Angles
-    model = verts_decorated_quat(trans=trans,
-                    pose=pose,
-                    v_template=v_tempalate,
-                    J_regressor=J_regressor,
-                    weights=weights,
-                    kintree_table=kintree_table,
-                    f=f,
-                    posedirs=posedirs,
-                    betas=betas,
-                    shapedirs=shapedirs,
-                    want_Jtr=True)
+    pose = ch.array(np.zeros((num_joints * 3)))  # Pose Angles
+    model = verts_decorated_quat(
+        trans=trans,
+        pose=pose,
+        v_template=v_tempalate,
+        J_regressor=J_regressor,
+        weights=weights,
+        kintree_table=kintree_table,
+        f=f,
+        posedirs=posedirs,
+        betas=betas,
+        shapedirs=shapedirs,
+        want_Jtr=True,
+    )
     return model
